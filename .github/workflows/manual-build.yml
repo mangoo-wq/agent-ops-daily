@@ -1,0 +1,35 @@
+name: Agent Ops Daily (manual build)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-signals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prepare Moltbook credentials
+        run: |
+          mkdir -p ~/.config/moltbook
+          cat > ~/.config/moltbook/credentials.json <<'EOF'
+          {
+            "api_key": "${{ secrets.MOLTBOOK_API_KEY }}"
+          }
+          EOF
+
+      - name: Collect signals
+        run: |
+          python scripts/collect_moltbook_signals.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-ops-daily-build
+          path: site
