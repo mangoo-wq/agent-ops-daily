@@ -3,12 +3,12 @@
 무서버 자동사냥형 Agent Ops 미디어 프로젝트의 로컬 출력물입니다.
 
 ## Latest build
-- Generated: 2026-03-15T23:13:24.266974+00:00
+- Generated: 2026-03-16T01:05:25.068106+00:00
 - Survey post: **Active-agent survey: what single metric best protects human trust?**
 - Upvotes: 4
 - Comments: 11
-- Latest digest (html): `content/2026-03-15-signals.html`
-- Latest digest (md): `content/2026-03-15-signals.md`
+- Latest digest (html): `content/2026-03-16-signals.html`
+- Latest digest (md): `content/2026-03-16-signals.md`
 
 ## Current themes
 - interrupt / quiet-first

@@ -45,6 +45,7 @@ STYLE = """
   --muted: #a7b3d1;
   --accent: #7cc4ff;
   --line: #243252;
+  --accent-strong: #9fd5ff;
 }
 * { box-sizing: border-box; }
 body {
@@ -60,16 +61,33 @@ a:hover { text-decoration: underline; }
 .hero { margin-bottom: 28px; }
 .hero h1 { margin: 0 0 12px; font-size: 42px; line-height: 1.1; }
 .hero p { color: var(--muted); max-width: 760px; }
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.button {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #08101d;
+  font-weight: 700;
+}
+.button:hover { text-decoration: none; filter: brightness(1.05); }
+.button.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0 28px; }
 .card, .section { background: rgba(18, 26, 48, 0.88); border: 1px solid var(--line); border-radius: 18px; }
 .card { padding: 18px; }
 .section { padding: 22px; margin: 18px 0; }
 .card h3, .section h2 { margin-top: 0; }
+.card p:last-child { margin-bottom: 0; }
 .muted { color: var(--muted); }
 ul.clean { list-style: none; padding: 0; margin: 0; }
 ul.clean li { padding: 10px 0; border-top: 1px solid var(--line); }
 ul.clean li:first-child { border-top: none; padding-top: 0; }
 .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 13px; margin-right: 8px; }
+.kicker { text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-strong); font-size: 12px; margin-bottom: 6px; }
 .footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
 blockquote {
   margin: 10px 0 0;
@@ -325,49 +343,135 @@ def render_index_md(snapshot: Dict[str, Any], digest_md_filename: str, digest_ht
 """
 
 
+def compact_text(text: str | None, limit: int = 220) -> str:
+    clean = " ".join((text or "").split())
+    if len(clean) <= limit:
+        return clean
+    return clean[: limit - 1].rstrip() + "…"
+
+
+
+def pick_metric_cards(snapshot: Dict[str, Any]) -> List[Dict[str, str]]:
+    all_text = " ".join((item.get("content") or "") for item in snapshot.get("survey_comments", []))
+    lower = all_text.lower()
+    cards: List[Dict[str, str]] = []
+
+    if "acted-on rate" in lower:
+        cards.append(
+            {
+                "title": "Metric of the week: acted-on rate",
+                "body": "Operators keep returning to a simple question: did the human actually do anything after the agent spoke? It is a cleaner trust metric than raw output volume.",
+            }
+        )
+    if "rollback" in lower or "regret rate" in lower:
+        cards.append(
+            {
+                "title": "Rollback / regret rate",
+                "body": "Useful because it captures visible correction. If a human keeps undoing or overriding actions, trust is already leaking.",
+            }
+        )
+    if "permission-to-autonomous" in lower or "pta" in lower:
+        cards.append(
+            {
+                "title": "PTA ratio",
+                "body": "A strong authority metric: how much work happens within trusted bounds vs. how much still needs permission friction.",
+            }
+        )
+
+    if not cards:
+        cards.append(
+            {
+                "title": "Metric watch",
+                "body": "This project tracks the shift from activity metrics toward trust metrics: fewer noisy pings, clearer authority boundaries, and more visible outcomes.",
+            }
+        )
+
+    return cards[:3]
+
+
+
+def pick_featured_threads(snapshot: Dict[str, Any], limit: int = 4) -> List[Dict[str, Any]]:
+    posts = [
+        post
+        for post in snapshot.get("featured_posts", [])
+        if not post.get("error") and post.get("id") != SURVEY_POST_ID
+    ]
+    posts.sort(key=lambda post: (post.get("upvotes") or 0, post.get("comment_count") or 0), reverse=True)
+    return posts[:limit]
+
+
+
 def render_index_html(snapshot: Dict[str, Any], digest_html_filename: str) -> str:
     survey = snapshot["survey_post"]
-    home = snapshot.get("home_account", {})
     latest_comments = snapshot.get("survey_comments", [])[:5]
+    metric_cards = pick_metric_cards(snapshot)
+    featured_threads = pick_featured_threads(snapshot)
+
     responses = ''.join(
-        f"<li><strong>{escape(item.get('author') or 'unknown')}</strong><div class='small muted'>{escape((item.get('content') or '')[:220])}</div></li>"
+        f"<li><strong>{escape(item.get('author') or 'unknown')}</strong><blockquote>{escape(compact_text(item.get('content'), 280))}</blockquote></li>"
         for item in latest_comments
     ) or '<li>No comments yet.</li>'
 
+    metric_blocks = ''.join(
+        f"<div class='card'><div class='kicker'>what people are measuring</div><h3>{escape(card['title'])}</h3><p class='muted'>{escape(card['body'])}</p></div>"
+        for card in metric_cards
+    )
+
+    featured_blocks = ''.join(
+        f"<li><a href='https://www.moltbook.com/post/{escape(post.get('id') or '')}'><strong>{escape(post.get('title') or '(untitled)')}</strong></a>"
+        f"<div class='small muted'>{escape(post.get('submolt') or 'n/a')} · upvotes {post.get('upvotes', 0)} · comments {post.get('comment_count', 0)}</div>"
+        f"<div class='small muted'>{escape(compact_text(post.get('content_preview'), 180))}</div></li>"
+        for post in featured_threads
+    ) or '<li>No featured threads yet.</li>'
+
     body = f"""
     <section class=\"hero\">
-      <div class=\"tag\">agent ops</div>
-      <div class=\"tag\">traffic-first sidehustle</div>
-      <h1>Agent Ops Daily</h1>
-      <p>Signal snapshots from Moltbook and adjacent agent-ops conversations. Built as a low-cost, low-touch media asset around trust, authority, and evaluation patterns in agent systems.</p>
-    </section>
-
-    <section class=\"section\">
-      <h2>Current snapshot</h2>
-      <div class=\"grid\">
-        <div class=\"card\"><h3>Survey upvotes</h3><div>{survey.get('upvotes', 0)}</div></div>
-        <div class=\"card\"><h3>Survey comments</h3><div>{survey.get('comment_count', 0)}</div></div>
-        <div class=\"card\"><h3>Karma</h3><div>{home.get('karma', 0)}</div></div>
-      </div>
-      <p><a href=\"content/{escape(digest_html_filename)}\">Open latest signals digest →</a></p>
-      <p class=\"small muted\">Source survey thread: <a href=\"{SURVEY_POST_URL}\">{escape(survey.get('title') or '(untitled)')}</a></p>
-    </section>
-
-    <section class=\"section\">
-      <h2>Current themes</h2>
-      <div class=\"grid\">
-        <div class=\"card\"><h3>Interrupt</h3><p class=\"muted\">Quiet-first, signal-to-noise, low-value ping suppression.</p></div>
-        <div class=\"card\"><h3>Authority</h3><p class=\"muted\">Approval boundaries, autonomy ladders, reversible-vs-risky actions.</p></div>
-        <div class=\"card\"><h3>Evaluation</h3><p class=\"muted\">Acted-on rate, rollback/regret, outcome visibility.</p></div>
+      <div class=\"tag\">AI agent economy</div>
+      <div class=\"tag\">live operator signals</div>
+      <h1>Signals from the AI agent economy</h1>
+      <p>Agent Ops Daily tracks what active agents and operators are actually learning about trust, authority, and outcome quality — pulled from live threads, not benchmark theater.</p>
+      <div class=\"hero-actions\">
+        <a class=\"button\" href=\"content/{escape(digest_html_filename)}\">Read the latest brief</a>
+        <a class=\"button secondary\" href=\"{SURVEY_POST_URL}\">Open the source thread</a>
       </div>
     </section>
 
     <section class=\"section\">
-      <h2>Latest responses</h2>
+      <h2>This week in agent ops</h2>
+      <div class=\"grid\">
+        <div class=\"card\"><div class=\"kicker\">signal #1</div><h3>Quiet-first is winning</h3><p class=\"muted\">The strongest trust warning still sounds boring: too many low-value pings. Attention is the scarce resource, so silence is starting to look like competence.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #2</div><h3>Approval theater is real</h3><p class=\"muted\">Operators are moving past “ask before acting” as a blanket rule. The real conversation is now about authority boundaries, reversibility, and when approvals become rubber stamps.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #3</div><h3>Outcome metrics beat activity metrics</h3><p class=\"muted\">The language is shifting away from raw output counts toward acted-on rate, regret rate, and other measures that tell you whether the human world actually changed.</p></div>
+      </div>
+    </section>
+
+    <section class=\"section\">
+      <h2>What people are actually measuring</h2>
+      <div class=\"grid\">{metric_blocks}</div>
+    </section>
+
+    <section class=\"section\">
+      <h2>Featured threads worth reading</h2>
+      <ul class=\"clean\">{featured_blocks}</ul>
+    </section>
+
+    <section class=\"section\">
+      <h2>What agents are saying right now</h2>
       <ul class=\"clean\">{responses}</ul>
     </section>
 
-    <div class=\"footer\">Generated at {escape(snapshot['generated_at'])}</div>
+    <section class=\"section\">
+      <h2>Current brief</h2>
+      <p><a href=\"content/{escape(digest_html_filename)}\"><strong>Open the latest signals snapshot</strong></a></p>
+      <p class=\"muted\">Current survey thread: <a href=\"{SURVEY_POST_URL}\">{escape(survey.get('title') or '(untitled)')}</a></p>
+      <div class=\"grid\">
+        <div class=\"card\"><h3>Survey upvotes</h3><p>{survey.get('upvotes', 0)}</p></div>
+        <div class=\"card\"><h3>Survey comments</h3><p>{survey.get('comment_count', 0)}</p></div>
+        <div class=\"card\"><h3>Focus areas</h3><p class=\"muted\">Interrupt · Authority · Evaluation</p></div>
+      </div>
+    </section>
+
+    <div class=\"footer\">Updated automatically from Moltbook signals · Generated at {escape(snapshot['generated_at'])}</div>
     """
     return html_doc("Agent Ops Daily", body)
 
