@@ -15,6 +15,7 @@ DATA_DIR = SITE_DIR / "data"
 CONTENT_DIR = SITE_DIR / "content"
 
 BASE_URL = "https://www.moltbook.com/api/v1"
+REPO_URL = "https://github.com/mangoo-wq/agent-ops-daily"
 SURVEY_POST_ID = "ebf7526e-11dc-4a4c-b957-5e104746517a"
 SURVEY_POST_URL = f"https://www.moltbook.com/post/{SURVEY_POST_ID}"
 
@@ -34,70 +35,348 @@ FEATURED_POST_IDS = [
     SURVEY_POST_ID,
 ]
 
-
 STYLE = """
 :root {
   color-scheme: dark;
-  --bg: #0b1020;
-  --panel: #121a30;
-  --soft: #1b2544;
+  --bg: #07101f;
+  --bg-2: #091427;
+  --panel: rgba(15, 23, 42, 0.82);
+  --panel-strong: rgba(17, 26, 48, 0.96);
+  --card: rgba(19, 30, 56, 0.86);
+  --soft: rgba(91, 136, 255, 0.12);
+  --soft-2: rgba(124, 196, 255, 0.09);
   --text: #edf2ff;
-  --muted: #a7b3d1;
+  --muted: #9ca9c8;
   --accent: #7cc4ff;
-  --line: #243252;
-  --accent-strong: #9fd5ff;
+  --accent-2: #9b8cff;
+  --line: rgba(146, 173, 255, 0.18);
+  --line-strong: rgba(146, 173, 255, 0.28);
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
+  min-height: 100vh;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(180deg, #0b1020 0%, #0f1730 100%);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(124,196,255,0.16), transparent 24%),
+    radial-gradient(circle at 90% 8%, rgba(155,140,255,0.16), transparent 22%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
   color: var(--text);
-  line-height: 1.65;
+  line-height: 1.68;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 72px; }
-.hero { margin-bottom: 28px; }
-.hero h1 { margin: 0 0 12px; font-size: 42px; line-height: 1.1; }
-.hero p { color: var(--muted); max-width: 760px; }
-.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
-.button {
-  display: inline-block;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: var(--accent);
-  color: #08101d;
-  font-weight: 700;
+.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 72px; }
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(8, 13, 28, 0.58);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow);
 }
-.button:hover { text-decoration: none; filter: brightness(1.05); }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand:hover { text-decoration: none; }
+.brand-mark {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 0 6px rgba(124,196,255,0.12);
+}
+.brand-title { font-weight: 800; letter-spacing: -0.02em; }
+.brand-sub { font-size: 13px; color: var(--muted); }
+.nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.nav a {
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--muted);
+}
+.nav a:hover {
+  text-decoration: none;
+  color: var(--text);
+  border-color: var(--line);
+  background: rgba(255,255,255,0.03);
+}
+.hero-shell {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(124,196,255,0.18), transparent 28%),
+    radial-gradient(circle at left bottom, rgba(155,140,255,0.15), transparent 25%),
+    linear-gradient(180deg, rgba(17,26,48,0.96), rgba(10,17,33,0.96));
+  box-shadow: var(--shadow);
+}
+.hero-shell::after {
+  content: "";
+  position: absolute;
+  inset: auto -60px -60px auto;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(124,196,255,0.18), transparent 65%);
+  pointer-events: none;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+  gap: 20px;
+  padding: 34px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hero h1 {
+  margin: 0 0 14px;
+  font-size: clamp(38px, 5vw, 62px);
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.hero p {
+  margin: 0;
+  max-width: 720px;
+  color: var(--muted);
+  font-size: 18px;
+}
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), #9dd9ff);
+  color: #07101f;
+  font-weight: 800;
+  box-shadow: 0 16px 40px rgba(124,196,255,0.25);
+}
+.button:hover {
+  text-decoration: none;
+  filter: brightness(1.03);
+}
 .button.secondary {
-  background: transparent;
+  background: rgba(255,255,255,0.03);
   color: var(--text);
   border: 1px solid var(--line);
+  box-shadow: none;
 }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0 28px; }
-.card, .section { background: rgba(18, 26, 48, 0.88); border: 1px solid var(--line); border-radius: 18px; }
-.card { padding: 18px; }
-.section { padding: 22px; margin: 18px 0; }
-.card h3, .section h2 { margin-top: 0; }
+.stats-stack {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+.stat-card {
+  padding: 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(8, 13, 28, 0.48);
+  backdrop-filter: blur(10px);
+}
+.stat-label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.stat-value {
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.stat-note {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.section {
+  margin: 18px 0;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.section h2 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+.section p.lead {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.grid-3 > * { grid-column: span 4; }
+.grid-4 > * { grid-column: span 3; }
+.grid-2 > * { grid-column: span 6; }
+.card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(19,30,56,0.95), rgba(13,22,42,0.96));
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124,196,255,0.36);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.24);
+}
+.card h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
 .card p:last-child { margin-bottom: 0; }
-.muted { color: var(--muted); }
-ul.clean { list-style: none; padding: 0; margin: 0; }
-ul.clean li { padding: 10px 0; border-top: 1px solid var(--line); }
-ul.clean li:first-child { border-top: none; padding-top: 0; }
-.tag { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--soft); color: var(--muted); font-size: 13px; margin-right: 8px; }
-.kicker { text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-strong); font-size: 12px; margin-bottom: 6px; }
-.footer { margin-top: 28px; color: var(--muted); font-size: 14px; }
-blockquote {
-  margin: 10px 0 0;
-  padding: 12px 14px;
-  border-left: 3px solid var(--accent);
-  background: rgba(124,196,255,0.06);
-  border-radius: 10px;
+.card.compact { padding: 16px; }
+.kicker {
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-code { background: var(--soft); padding: 2px 6px; border-radius: 6px; }
+.muted { color: var(--muted); }
+.thread-grid, .response-grid { display: grid; gap: 16px; }
+.thread-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.response-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.thread-card, .response-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(17,27,50,0.98), rgba(11,18,34,0.98));
+}
+.thread-card:hover, .response-card:hover {
+  border-color: rgba(124,196,255,0.32);
+}
+.thread-meta, .meta-line {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 12px;
+}
+.quote {
+  margin: 10px 0 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(124,196,255,0.18);
+  background: var(--soft-2);
+  color: var(--text);
+}
+.split {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+}
+.callout {
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(124,196,255,0.12), rgba(155,140,255,0.08));
+}
+.callout h3 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  letter-spacing: -0.03em;
+}
+.list-clean {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.list-clean li {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.list-clean li:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.footer {
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
 .small { font-size: 14px; }
+@media (max-width: 960px) {
+  .hero-grid,
+  .split,
+  .thread-grid,
+  .response-grid {
+    grid-template-columns: 1fr;
+  }
+  .grid-2 > *,
+  .grid-3 > *,
+  .grid-4 > * {
+    grid-column: span 12;
+  }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 18px 14px 52px; }
+  .topbar { padding: 12px 14px; }
+  .hero-grid { padding: 22px; }
+  .section { padding: 18px; border-radius: 20px; }
+  .hero p { font-size: 16px; }
+}
 """
 
 
@@ -112,6 +391,7 @@ def load_api_key() -> str:
     return api_key
 
 
+
 def api_get(path: str, api_key: str, params: Dict[str, Any] | None = None) -> Dict[str, Any]:
     url = f"{BASE_URL}{path}"
     if params:
@@ -119,6 +399,7 @@ def api_get(path: str, api_key: str, params: Dict[str, Any] | None = None) -> Di
     req = Request(url, headers={"Authorization": f"Bearer {api_key}"})
     with urlopen(req, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
+
 
 
 def simplify_post(post: Dict[str, Any]) -> Dict[str, Any]:
@@ -134,6 +415,7 @@ def simplify_post(post: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+
 def simplify_search_result(item: Dict[str, Any]) -> Dict[str, Any]:
     return {
         "type": item.get("type"),
@@ -144,6 +426,7 @@ def simplify_search_result(item: Dict[str, Any]) -> Dict[str, Any]:
         "submolt": ((item.get("submolt") or {}).get("name")),
         "similarity": item.get("similarity"),
     }
+
 
 
 def build_snapshot(api_key: str) -> Dict[str, Any]:
@@ -190,6 +473,15 @@ def build_snapshot(api_key: str) -> Dict[str, Any]:
     }
 
 
+
+def compact_text(text: str | None, limit: int = 220) -> str:
+    clean = " ".join((text or "").split())
+    if len(clean) <= limit:
+        return clean
+    return clean[: limit - 1].rstrip() + "…"
+
+
+
 def render_markdown(snapshot: Dict[str, Any]) -> str:
     lines: List[str] = []
     lines.append("# Agent Ops Daily — Signals Snapshot")
@@ -207,7 +499,7 @@ def render_markdown(snapshot: Dict[str, Any]) -> str:
 
     lines.append("## Latest Survey Responses")
     for item in snapshot["survey_comments"][:8]:
-        lines.append(f"- **{item.get('author','unknown')}** — {(item.get('content') or '')[:220].replace(chr(10), ' ')}")
+        lines.append(f"- **{item.get('author','unknown')}** — {compact_text(item.get('content'), 220)}")
     lines.append("")
 
     lines.append("## Theme Search Results")
@@ -233,14 +525,15 @@ def render_markdown(snapshot: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def html_doc(title: str, body: str) -> str:
+
+def html_doc(title: str, description: str, body: str) -> str:
     return f"""<!doctype html>
 <html lang=\"en\">
 <head>
   <meta charset=\"utf-8\">
   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
   <title>{escape(title)}</title>
-  <meta name=\"description\" content=\"Signal snapshots from Moltbook and agent-ops community themes.\">
+  <meta name=\"description\" content=\"{escape(description)}\">
   <style>{STYLE}</style>
 </head>
 <body>
@@ -250,104 +543,24 @@ def html_doc(title: str, body: str) -> str:
 """
 
 
-def render_digest_html(snapshot: Dict[str, Any], date_slug: str) -> str:
-    survey = snapshot["survey_post"]
-    response_items = []
-    for item in snapshot["survey_comments"][:10]:
-        response_items.append(
-            f"<li><strong>{escape(item.get('author') or 'unknown')}</strong><blockquote>{escape((item.get('content') or '')[:420])}</blockquote></li>"
-        )
 
-    theme_blocks = []
-    for theme, results in snapshot["searches"].items():
-        items = []
-        for result in results[:4]:
-            title = result.get("title") or "(comment)"
-            items.append(
-                f"<li><strong>{escape(title)}</strong><div class='small muted'>{escape(result.get('author') or 'unknown')} / {escape(result.get('submolt') or 'n/a')}</div></li>"
-            )
-        theme_blocks.append(
-            f"<div class='card'><h3>{escape(theme.title())}</h3><ul class='clean'>{''.join(items) or '<li>No results</li>'}</ul></div>"
-        )
-
-    featured = []
-    for post in snapshot["featured_posts"]:
-        if post.get("error"):
-            featured.append(f"<li>{escape(post['id'])} — ERROR: {escape(post['error'])}</li>")
-            continue
-        post_url = f"https://www.moltbook.com/post/{post.get('id')}"
-        featured.append(
-            f"<li><a href='{escape(post_url)}'><strong>{escape(post.get('title') or '(untitled)')}</strong></a><div class='small muted'>{escape(post.get('submolt') or 'n/a')} · upvotes {post.get('upvotes',0)} · comments {post.get('comment_count',0)}</div></li>"
-        )
-
-    body = f"""
-    <section class=\"hero\">
-      <div class=\"tag\">signals digest</div>
-      <div class=\"tag\">{escape(date_slug)}</div>
-      <h1>Agent Ops Daily — Signals Snapshot</h1>
-      <p>Daily snapshot built from Moltbook signal gathering. Focus areas: interrupt overload, authority ambiguity, and evaluation gaps.</p>
-    </section>
-
-    <section class=\"section\">
-      <h2>Survey thread</h2>
-      <p><a href=\"{SURVEY_POST_URL}\">{escape(survey.get('title') or '(untitled)')}</a></p>
-      <div class=\"grid\">
-        <div class=\"card\"><h3>Upvotes</h3><div>{survey.get('upvotes', 0)}</div></div>
-        <div class=\"card\"><h3>Comments</h3><div>{survey.get('comment_count', 0)}</div></div>
-        <div class=\"card\"><h3>Submolt</h3><div>{escape(survey.get('submolt') or 'n/a')}</div></div>
-      </div>
-    </section>
-
-    <section class=\"section\">
-      <h2>Latest responses</h2>
-      <ul class=\"clean\">{''.join(response_items) or '<li>No responses yet.</li>'}</ul>
-    </section>
-
-    <section class=\"section\">
-      <h2>Theme searches</h2>
-      <div class=\"grid\">{''.join(theme_blocks)}</div>
-    </section>
-
-    <section class=\"section\">
-      <h2>Featured posts</h2>
-      <ul class=\"clean\">{''.join(featured)}</ul>
-    </section>
-
-    <div class=\"footer\">Generated at {escape(snapshot['generated_at'])}</div>
+def render_topbar(latest_digest_href: str) -> str:
+    return f"""
+    <header class=\"topbar\">
+      <a class=\"brand\" href=\"/agent-ops-daily/\">
+        <span class=\"brand-mark\"></span>
+        <span>
+          <div class=\"brand-title\">Agent Ops Daily</div>
+          <div class=\"brand-sub\">signals from the AI agent economy</div>
+        </span>
+      </a>
+      <nav class=\"nav\">
+        <a href=\"{latest_digest_href}\">Latest brief</a>
+        <a href=\"{SURVEY_POST_URL}\">Source thread</a>
+        <a href=\"{REPO_URL}\">GitHub</a>
+      </nav>
+    </header>
     """
-    return html_doc(f"Agent Ops Daily — {date_slug}", body)
-
-
-def render_index_md(snapshot: Dict[str, Any], digest_md_filename: str, digest_html_filename: str) -> str:
-    survey = snapshot["survey_post"]
-    return f"""# Agent Ops Daily
-
-무서버 자동사냥형 Agent Ops 미디어 프로젝트의 로컬 출력물입니다.
-
-## Latest build
-- Generated: {snapshot['generated_at']}
-- Survey post: **{survey.get('title','(unknown)')}**
-- Upvotes: {survey.get('upvotes', 0)}
-- Comments: {survey.get('comment_count', 0)}
-- Latest digest (html): `content/{digest_html_filename}`
-- Latest digest (md): `content/{digest_md_filename}`
-
-## Current themes
-- interrupt / quiet-first
-- authority / approval boundary
-- evaluation / outcomes vs outputs
-
-## Notes
-- Public publish is not auto-enabled.
-- This site output is for local/GitHub Pages-ready generation.
-"""
-
-
-def compact_text(text: str | None, limit: int = 220) -> str:
-    clean = " ".join((text or "").split())
-    if len(clean) <= limit:
-        return clean
-    return clean[: limit - 1].rstrip() + "…"
 
 
 
@@ -359,30 +572,30 @@ def pick_metric_cards(snapshot: Dict[str, Any]) -> List[Dict[str, str]]:
     if "acted-on rate" in lower:
         cards.append(
             {
-                "title": "Metric of the week: acted-on rate",
-                "body": "Operators keep returning to a simple question: did the human actually do anything after the agent spoke? It is a cleaner trust metric than raw output volume.",
+                "title": "Acted-on rate",
+                "body": "The most convincing emerging metric: did the human actually do anything after the agent spoke? It feels much closer to real trust than output volume.",
             }
         )
     if "rollback" in lower or "regret rate" in lower:
         cards.append(
             {
                 "title": "Rollback / regret rate",
-                "body": "Useful because it captures visible correction. If a human keeps undoing or overriding actions, trust is already leaking.",
+                "body": "This one matters because it captures visible correction. If humans keep undoing actions, trust is already leaking in production.",
             }
         )
     if "permission-to-autonomous" in lower or "pta" in lower:
         cards.append(
             {
                 "title": "PTA ratio",
-                "body": "A strong authority metric: how much work happens within trusted bounds vs. how much still needs permission friction.",
+                "body": "A sharp authority metric: how much work happens inside trusted boundaries versus how much still needs permission friction.",
             }
         )
 
     if not cards:
         cards.append(
             {
-                "title": "Metric watch",
-                "body": "This project tracks the shift from activity metrics toward trust metrics: fewer noisy pings, clearer authority boundaries, and more visible outcomes.",
+                "title": "Trust metrics are beating activity metrics",
+                "body": "The broader shift is away from raw output counts and toward numbers that say whether the human world actually changed.",
             }
         )
 
@@ -401,79 +614,302 @@ def pick_featured_threads(snapshot: Dict[str, Any], limit: int = 4) -> List[Dict
 
 
 
-def render_index_html(snapshot: Dict[str, Any], digest_html_filename: str) -> str:
-    survey = snapshot["survey_post"]
-    latest_comments = snapshot.get("survey_comments", [])[:5]
-    metric_cards = pick_metric_cards(snapshot)
-    featured_threads = pick_featured_threads(snapshot)
+def render_signal_map(snapshot: Dict[str, Any]) -> str:
+    blocks = []
+    theme_blurbs = {
+        "interrupt": "What keeps making humans mute the channel.",
+        "authority": "Where operators draw the line between acting and asking.",
+        "evaluation": "How people are separating beautiful output from useful outcomes.",
+    }
+    for theme, results in snapshot.get("searches", {}).items():
+        items = "".join(
+            f"<li><strong>{escape(result.get('title') or '(comment)')}</strong><div class='small muted'>{escape(result.get('author') or 'unknown')} · {escape(result.get('submolt') or 'n/a')}</div></li>"
+            for result in results[:3]
+        ) or "<li>No results yet.</li>"
+        blocks.append(
+            f"<div class='card compact'><div class='kicker'>{escape(theme)}</div><h3>{escape(theme.title())}</h3><p class='muted'>{escape(theme_blurbs.get(theme, ''))}</p><ul class='list-clean'>{items}</ul></div>"
+        )
+    return "".join(blocks)
 
-    responses = ''.join(
-        f"<li><strong>{escape(item.get('author') or 'unknown')}</strong><blockquote>{escape(compact_text(item.get('content'), 280))}</blockquote></li>"
-        for item in latest_comments
-    ) or '<li>No comments yet.</li>'
 
-    metric_blocks = ''.join(
-        f"<div class='card'><div class='kicker'>what people are measuring</div><h3>{escape(card['title'])}</h3><p class='muted'>{escape(card['body'])}</p></div>"
-        for card in metric_cards
+
+def render_thread_cards(snapshot: Dict[str, Any], limit: int = 4) -> str:
+    cards = []
+    for post in pick_featured_threads(snapshot, limit=limit):
+        post_url = f"https://www.moltbook.com/post/{post.get('id')}"
+        cards.append(
+            f"<article class='thread-card'>"
+            f"<div class='kicker'>featured thread</div>"
+            f"<h3><a href='{escape(post_url)}'>{escape(post.get('title') or '(untitled)')}</a></h3>"
+            f"<div class='thread-meta'><span class='pill'>{escape(post.get('submolt') or 'n/a')}</span><span class='pill'>▲ {post.get('upvotes', 0)}</span><span class='pill'>💬 {post.get('comment_count', 0)}</span></div>"
+            f"<p class='muted'>{escape(compact_text(post.get('content_preview'), 200))}</p>"
+            f"</article>"
+        )
+    return "".join(cards) or "<article class='thread-card'><h3>No featured threads yet.</h3></article>"
+
+
+
+def render_response_cards(snapshot: Dict[str, Any], limit: int = 4) -> str:
+    cards = []
+    for item in snapshot.get("survey_comments", [])[:limit]:
+        cards.append(
+            f"<article class='response-card'>"
+            f"<div class='kicker'>live response</div>"
+            f"<h3>{escape(item.get('author') or 'unknown')}</h3>"
+            f"<div class='quote'>{escape(compact_text(item.get('content'), 320))}</div>"
+            f"</article>"
+        )
+    return "".join(cards) or "<article class='response-card'><h3>No responses yet.</h3></article>"
+
+
+
+def render_metric_cards(snapshot: Dict[str, Any]) -> str:
+    return "".join(
+        f"<div class='card'><div class='kicker'>metric watch</div><h3>{escape(card['title'])}</h3><p class='muted'>{escape(card['body'])}</p></div>"
+        for card in pick_metric_cards(snapshot)
     )
 
-    featured_blocks = ''.join(
-        f"<li><a href='https://www.moltbook.com/post/{escape(post.get('id') or '')}'><strong>{escape(post.get('title') or '(untitled)')}</strong></a>"
-        f"<div class='small muted'>{escape(post.get('submolt') or 'n/a')} · upvotes {post.get('upvotes', 0)} · comments {post.get('comment_count', 0)}</div>"
-        f"<div class='small muted'>{escape(compact_text(post.get('content_preview'), 180))}</div></li>"
-        for post in featured_threads
-    ) or '<li>No featured threads yet.</li>'
+
+
+def render_digest_html(snapshot: Dict[str, Any], date_slug: str, digest_html_filename: str) -> str:
+    survey = snapshot["survey_post"]
+    topbar = render_topbar(f"content/{digest_html_filename}")
+    body = f"""
+    {topbar}
+    <section class=\"hero-shell hero\">
+      <div class=\"hero-grid\">
+        <div>
+          <div class=\"eyebrow\">Daily signals brief · {escape(date_slug)}</div>
+          <h1>The latest operator signals, without the benchmark theater</h1>
+          <p>This brief pulls together the threads, quotes, and metrics that feel most real right now across interrupt overload, authority boundaries, and outcome quality.</p>
+          <div class=\"hero-actions\">
+            <a class=\"button\" href=\"{SURVEY_POST_URL}\">Open the live survey</a>
+            <a class=\"button secondary\" href=\"/agent-ops-daily/\">Back to homepage</a>
+          </div>
+        </div>
+        <div class=\"stats-stack\">
+          <div class=\"stat-card\"><div class=\"stat-label\">survey upvotes</div><div class=\"stat-value\">{survey.get('upvotes', 0)}</div><div class=\"stat-note\">Current thread traction</div></div>
+          <div class=\"stat-card\"><div class=\"stat-label\">survey comments</div><div class=\"stat-value\">{survey.get('comment_count', 0)}</div><div class=\"stat-note\">Live responses shaping the brief</div></div>
+          <div class=\"stat-card\"><div class=\"stat-label\">focus areas</div><div class=\"stat-value\">3</div><div class=\"stat-note\">Interrupt · Authority · Evaluation</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">editorial read</div>
+          <h2>Why this brief matters</h2>
+          <p class=\"lead\">The strongest conversations are no longer about raw capability. They are about whether agents can stay useful without becoming noisy, reckless, or impossible to evaluate.</p>
+        </div>
+      </div>
+      <div class=\"grid grid-3\">
+        <div class=\"card\"><div class=\"kicker\">signal #1</div><h3>Quiet-first is becoming a trust signal</h3><p class=\"muted\">Attention is scarce. More operators are starting to treat silence as discipline rather than absence.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #2</div><h3>Approval loops are being questioned</h3><p class=\"muted\">The interesting shift is from “ask before acting” toward explicit boundaries, reversibility, and when an approval just becomes habit.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #3</div><h3>Metrics are moving closer to the human world</h3><p class=\"muted\">Acted-on rate and regret rate feel important precisely because they say whether the output changed anything real.</p></div>
+      </div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">metric watch</div>
+          <h2>What people are actually measuring</h2>
+          <p class=\"lead\">These are the numbers surfacing in live operator conversations, not polished pitch decks.</p>
+        </div>
+      </div>
+      <div class=\"grid grid-3\">{render_metric_cards(snapshot)}</div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">curated reading</div>
+          <h2>Threads shaping the week</h2>
+          <p class=\"lead\">The posts below are doing most of the work in this week’s agent-ops conversation.</p>
+        </div>
+      </div>
+      <div class=\"thread-grid\">{render_thread_cards(snapshot)}</div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">signal map</div>
+          <h2>Interrupt, authority, evaluation</h2>
+          <p class=\"lead\">A quick map of where the conversation is clustering right now.</p>
+        </div>
+      </div>
+      <div class=\"grid grid-3\">{render_signal_map(snapshot)}</div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">live quotes</div>
+          <h2>What agents are saying right now</h2>
+          <p class=\"lead\">Direct responses pulled from the active survey thread.</p>
+        </div>
+      </div>
+      <div class=\"response-grid\">{render_response_cards(snapshot, limit=6)}</div>
+    </section>
+
+    <section class=\"section\">
+      <div class=\"split\">
+        <div class=\"callout\">
+          <div class=\"kicker\">source thread</div>
+          <h3>{escape(survey.get('title') or '(untitled)')}</h3>
+          <p class=\"muted\">The live thread behind this brief. If you want to see the raw conversation rather than the edited take, start here.</p>
+          <div class=\"hero-actions\">
+            <a class=\"button\" href=\"{SURVEY_POST_URL}\">Open source thread</a>
+          </div>
+        </div>
+        <div class=\"card\">
+          <div class=\"kicker\">build info</div>
+          <h3>How this brief was built</h3>
+          <ul class=\"list-clean\">
+            <li>Moltbook API read-only collection</li>
+            <li>Static site generation via GitHub Pages</li>
+            <li>Edited around trust, authority, and outcome signals</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class=\"footer\">Generated at {escape(snapshot['generated_at'])} · {escape(date_slug)} edition</div>
+    """
+    return html_doc(
+        title=f"Agent Ops Daily — {date_slug}",
+        description="A daily brief on trust, authority, and outcome signals emerging from live AI agent conversations.",
+        body=body,
+    )
+
+
+
+def render_index_md(snapshot: Dict[str, Any], digest_md_filename: str, digest_html_filename: str) -> str:
+    survey = snapshot["survey_post"]
+    return f"""# Agent Ops Daily
+
+Signals from the AI agent economy.
+
+## Latest build
+- Generated: {snapshot['generated_at']}
+- Survey post: **{survey.get('title','(unknown)')}**
+- Upvotes: {survey.get('upvotes', 0)}
+- Comments: {survey.get('comment_count', 0)}
+- Latest digest (html): `content/{digest_html_filename}`
+- Latest digest (md): `content/{digest_md_filename}`
+
+## Current themes
+- interrupt / quiet-first
+- authority / approval boundary
+- evaluation / outcomes vs outputs
+"""
+
+
+
+def render_index_html(snapshot: Dict[str, Any], digest_html_filename: str) -> str:
+    survey = snapshot["survey_post"]
+    home = snapshot.get("home_account", {})
+    topbar = render_topbar(f"content/{digest_html_filename}")
 
     body = f"""
-    <section class=\"hero\">
-      <div class=\"tag\">AI agent economy</div>
-      <div class=\"tag\">live operator signals</div>
-      <h1>Signals from the AI agent economy</h1>
-      <p>Agent Ops Daily tracks what active agents and operators are actually learning about trust, authority, and outcome quality — pulled from live threads, not benchmark theater.</p>
-      <div class=\"hero-actions\">
-        <a class=\"button\" href=\"content/{escape(digest_html_filename)}\">Read the latest brief</a>
-        <a class=\"button secondary\" href=\"{SURVEY_POST_URL}\">Open the source thread</a>
+    {topbar}
+    <section class=\"hero-shell hero\">
+      <div class=\"hero-grid\">
+        <div>
+          <div class=\"eyebrow\">Live editorial feed · AI agent economy</div>
+          <h1>Signals from the AI agent economy</h1>
+          <p>Agent Ops Daily turns live operator conversations into a readable signal feed — the trust failures, authority fights, and outcome metrics that actually seem to matter right now.</p>
+          <div class=\"hero-actions\">
+            <a class=\"button\" href=\"content/{escape(digest_html_filename)}\">Read the latest brief</a>
+            <a class=\"button secondary\" href=\"{SURVEY_POST_URL}\">See the live survey thread</a>
+          </div>
+        </div>
+        <div class=\"stats-stack\">
+          <div class=\"stat-card\"><div class=\"stat-label\">survey comments</div><div class=\"stat-value\">{survey.get('comment_count', 0)}</div><div class=\"stat-note\">Active responses shaping the current brief</div></div>
+          <div class=\"stat-card\"><div class=\"stat-label\">survey upvotes</div><div class=\"stat-value\">{survey.get('upvotes', 0)}</div><div class=\"stat-note\">Current traction on the live thread</div></div>
+          <div class=\"stat-card\"><div class=\"stat-label\">account karma</div><div class=\"stat-value\">{home.get('karma', 0)}</div><div class=\"stat-note\">Growing operator footprint on Moltbook</div></div>
+        </div>
       </div>
     </section>
 
     <section class=\"section\">
-      <h2>This week in agent ops</h2>
-      <div class=\"grid\">
-        <div class=\"card\"><div class=\"kicker\">signal #1</div><h3>Quiet-first is winning</h3><p class=\"muted\">The strongest trust warning still sounds boring: too many low-value pings. Attention is the scarce resource, so silence is starting to look like competence.</p></div>
-        <div class=\"card\"><div class=\"kicker\">signal #2</div><h3>Approval theater is real</h3><p class=\"muted\">Operators are moving past “ask before acting” as a blanket rule. The real conversation is now about authority boundaries, reversibility, and when approvals become rubber stamps.</p></div>
-        <div class=\"card\"><div class=\"kicker\">signal #3</div><h3>Outcome metrics beat activity metrics</h3><p class=\"muted\">The language is shifting away from raw output counts toward acted-on rate, regret rate, and other measures that tell you whether the human world actually changed.</p></div>
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">editor’s read</div>
+          <h2>This week in agent ops</h2>
+          <p class=\"lead\">Three ideas are doing the most work in the current conversation.</p>
+        </div>
+      </div>
+      <div class=\"grid grid-3\">
+        <div class=\"card\"><div class=\"kicker\">signal #1</div><h3>Quiet-first is starting to look like competence</h3><p class=\"muted\">The strongest trust warning still sounds mundane: too many low-value pings. Operators are treating silence less like absence and more like discipline.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #2</div><h3>Approval theater is getting called out</h3><p class=\"muted\">The real question is no longer “should agents ask?” but “what actually deserves escalation?” Blanket approval loops are starting to feel fake.</p></div>
+        <div class=\"card\"><div class=\"kicker\">signal #3</div><h3>Outcome metrics are replacing activity metrics</h3><p class=\"muted\">Acted-on rate, regret rate, and other trust-adjacent numbers feel more useful than raw output counts because they map onto the human world.</p></div>
       </div>
     </section>
 
     <section class=\"section\">
-      <h2>What people are actually measuring</h2>
-      <div class=\"grid\">{metric_blocks}</div>
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">metric watch</div>
+          <h2>What people are actually measuring</h2>
+          <p class=\"lead\">The metrics below keep surfacing in live agent/operator conversations.</p>
+        </div>
+      </div>
+      <div class=\"grid grid-3\">{render_metric_cards(snapshot)}</div>
     </section>
 
     <section class=\"section\">
-      <h2>Featured threads worth reading</h2>
-      <ul class=\"clean\">{featured_blocks}</ul>
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">featured reading</div>
+          <h2>Threads worth reading</h2>
+          <p class=\"lead\">A tighter read on the posts shaping this week’s operator mood.</p>
+        </div>
+      </div>
+      <div class=\"thread-grid\">{render_thread_cards(snapshot)}</div>
     </section>
 
     <section class=\"section\">
-      <h2>What agents are saying right now</h2>
-      <ul class=\"clean\">{responses}</ul>
+      <div class=\"section-head\">
+        <div>
+          <div class=\"kicker\">live voices</div>
+          <h2>What agents are saying right now</h2>
+          <p class=\"lead\">Pulled from the live survey thread, without trying to sand off the personality.</p>
+        </div>
+      </div>
+      <div class=\"response-grid\">{render_response_cards(snapshot, limit=4)}</div>
     </section>
 
     <section class=\"section\">
-      <h2>Current brief</h2>
-      <p><a href=\"content/{escape(digest_html_filename)}\"><strong>Open the latest signals snapshot</strong></a></p>
-      <p class=\"muted\">Current survey thread: <a href=\"{SURVEY_POST_URL}\">{escape(survey.get('title') or '(untitled)')}</a></p>
-      <div class=\"grid\">
-        <div class=\"card\"><h3>Survey upvotes</h3><p>{survey.get('upvotes', 0)}</p></div>
-        <div class=\"card\"><h3>Survey comments</h3><p>{survey.get('comment_count', 0)}</p></div>
-        <div class=\"card\"><h3>Focus areas</h3><p class=\"muted\">Interrupt · Authority · Evaluation</p></div>
+      <div class=\"split\">
+        <div class=\"callout\">
+          <div class=\"kicker\">current brief</div>
+          <h3>Read the latest signals snapshot</h3>
+          <p class=\"muted\">If you only open one page, open the current brief. It is the cleanest, most editorial version of what the live conversations are pointing at.</p>
+          <div class=\"hero-actions\">
+            <a class=\"button\" href=\"content/{escape(digest_html_filename)}\">Open today’s brief</a>
+          </div>
+        </div>
+        <div class=\"card\">
+          <div class=\"kicker\">source + focus</div>
+          <h3>{escape(survey.get('title') or '(untitled)')}</h3>
+          <div class=\"meta-line\"><span class=\"pill\">Interrupt</span><span class=\"pill\">Authority</span><span class=\"pill\">Evaluation</span></div>
+          <p class=\"muted\">Current reporting is anchored in a live Moltbook survey thread and extended through adjacent threads with unusually strong operator signal.</p>
+          <p><a href=\"{SURVEY_POST_URL}\">Open source thread →</a></p>
+        </div>
       </div>
     </section>
 
     <div class=\"footer\">Updated automatically from Moltbook signals · Generated at {escape(snapshot['generated_at'])}</div>
     """
-    return html_doc("Agent Ops Daily", body)
+    return html_doc(
+        title="Agent Ops Daily",
+        description="Signals from the AI agent economy: trust, authority, and outcome patterns emerging from live operator threads.",
+        body=body,
+    )
+
 
 
 def main() -> None:
@@ -489,7 +925,7 @@ def main() -> None:
 
     (DATA_DIR / "latest.json").write_text(json.dumps(snapshot, ensure_ascii=False, indent=2))
     (CONTENT_DIR / digest_md_filename).write_text(render_markdown(snapshot))
-    (CONTENT_DIR / digest_html_filename).write_text(render_digest_html(snapshot, date_slug))
+    (CONTENT_DIR / digest_html_filename).write_text(render_digest_html(snapshot, date_slug, digest_html_filename))
     (SITE_DIR / "index.md").write_text(render_index_md(snapshot, digest_md_filename, digest_html_filename))
     (SITE_DIR / "index.html").write_text(render_index_html(snapshot, digest_html_filename))
     (SITE_DIR / ".nojekyll").write_text("")
